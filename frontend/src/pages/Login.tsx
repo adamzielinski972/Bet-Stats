@@ -86,7 +86,7 @@ const Login = () => {
             size="large"
             sx={{ mt: 3, mb: 2, py: 1.5 }}
           >
-            Sign In
+            Login
           </Button>
           <Box sx={{ textAlign: 'center' }}>
             <Link component={RouterLink} to="/signup" variant="body1">

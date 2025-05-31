@@ -279,7 +279,7 @@ const Signup = () => {
           </Button>
           <Box sx={{ textAlign: 'center' }}>
             <Link component={RouterLink} to="/login" variant="body1">
-              {"Already have an account? Sign In"}
+              {"Already have an account? Login"}
             </Link>
           </Box>
         </form>
