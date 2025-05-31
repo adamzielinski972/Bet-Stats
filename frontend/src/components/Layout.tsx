@@ -1,102 +1,67 @@
-import React, { ReactNode } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   AppBar,
   Box,
-  Link,
   Toolbar,
   Typography,
-  Button,
+  Container,
+  IconButton
 } from '@mui/material';
+import { Menu as MenuIcon } from '@mui/icons-material';
+import SideDrawer from './SideDrawer';
 import Logo from '../assets/Logo.png';
 
 interface LayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+
   return (
-    <Box 
-      component="div"
-      sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        minHeight: '100vh',
-        width: '100%',
-        margin: 0,
-        padding: 0,
-        overflow: 'hidden'
-      }}
-    >
-      <AppBar 
-        position="static" 
-        sx={{ 
-          width: '100%',
-          margin: 0,
-          padding: 0,
-          boxShadow: 2
-        }}
-      >
-        <Toolbar 
-          sx={{ 
-            width: '100%',
-            minHeight: { xs: 56, sm: 64 },
-            px: 2
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
-            <Link component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit' }}>
-              <img 
-                src={Logo} 
-                alt="Bet Stats Logo" 
-                style={{ 
-                  height: '32px',
-                  width: 'auto'
-                }} 
-              />
-              <Typography variant="h6" component="div">
-                Bet Stats
-              </Typography>
-            </Link>
-          </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2 }}
+          >
+            <MenuIcon />
+          </IconButton>
+          
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+            <img src={Logo} alt="Logo" style={{ height: '40px', marginRight: '10px' }} />
+            <Typography variant="h6" component="div">
+              Bet Stats
+            </Typography>
+          </Link>
+          
+          <Box sx={{ flexGrow: 1 }} />
+          
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button color="inherit" component={RouterLink} to="/login">
-              Login
-            </Button>
-            <Button color="inherit" component={RouterLink} to="/signup">
-              Sign Up
-            </Button>
+            <Link to="/login" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Typography>Login</Typography>
+            </Link>
+            <Link to="/signup" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Typography>Sign Up</Typography>
+            </Link>
           </Box>
         </Toolbar>
       </AppBar>
-      <Box 
-        component="main" 
-        sx={{ 
-          flex: '1 1 auto',
-          width: '100%',
-          margin: 0,
-          padding: 0,
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
+
+      <SideDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
+      <Container component="main" sx={{ flexGrow: 1, width: '100%', maxWidth: '100% !important', p: 3 }}>
         {children}
-      </Box>
-      <Box 
-        component="footer" 
-        sx={{ 
-          width: '100%',
-          py: 2,
-          px: 2,
-          backgroundColor: 'background.paper',
-          borderTop: 1,
-          borderColor: 'divider'
-        }}
-      >
-        <Typography variant="body2" color="text.secondary" align="center">
-          © {new Date().getFullYear()} Bet Stats
-        </Typography>
-      </Box>
+      </Container>
     </Box>
   );
 };

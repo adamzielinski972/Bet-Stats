@@ -6,6 +6,11 @@ import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import PremierLeague from './pages/leagues/PremierLeague';
+import NBA from './pages/leagues/NBA';
+import MLB from './pages/leagues/MLB';
+import NFL from './pages/leagues/NFL';
+import NHL from './pages/leagues/NHL';
 import './App.css';
 
 const theme = createTheme({
@@ -159,6 +164,11 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/premier-league" element={<PremierLeague />} />
+            <Route path="/nba" element={<NBA />} />
+            <Route path="/mlb" element={<MLB />} />
+            <Route path="/nfl" element={<NFL />} />
+            <Route path="/nhl" element={<NHL />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
