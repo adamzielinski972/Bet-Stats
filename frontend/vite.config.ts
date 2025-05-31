@@ -7,5 +7,14 @@ export default defineConfig({
     alias: {
       '@': '/src'
     }
+  },
+  server: {
+    port: 5173,
+    strictPort: false,
+    open: true
+  },
+  preview: {
+    port: 5173,
+    strictPort: false
   }
 }) 
