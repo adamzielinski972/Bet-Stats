@@ -5,7 +5,16 @@ import SportsNavBar from '../components/SportsNavBar';
 const Home: React.FC = () => {
   return (
     <Box>
-      <Box sx={{ width: '30%', maxWidth: '1200px', mx: 'auto' }}>
+      <Box sx={{ 
+        width: { 
+          xs: '95%', // Mobile: almost full width
+          sm: '80%', // Tablet: 80% width
+          md: '70%', // Desktop: 70% width
+          lg: '60%'  // Large screens: 60% width
+        }, 
+        maxWidth: '1200px', 
+        mx: 'auto' 
+      }}>
         <SportsNavBar />
       </Box>
       

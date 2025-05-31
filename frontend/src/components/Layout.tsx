@@ -26,35 +26,37 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
       <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-            <img src={Logo} alt="Logo" style={{ height: '40px', marginRight: '10px' }} />
-            <Typography variant="h6" component="div">
-              Bet Stats
-            </Typography>
-          </Link>
-          
-          <Box sx={{ flexGrow: 1 }} />
-          
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Link to="/login" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <Typography>Login</Typography>
+        <Container maxWidth="lg" sx={{ px: 2 }}>
+          <Toolbar sx={{ px: 0 }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            
+            <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+              <img src={Logo} alt="Logo" style={{ height: '40px', marginRight: '10px' }} />
+              <Typography variant="h6" component="div">
+                Bet Stats
+              </Typography>
             </Link>
-            <Link to="/signup" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <Typography>Sign Up</Typography>
-            </Link>
-          </Box>
-        </Toolbar>
+            
+            <Box sx={{ flexGrow: 1 }} />
+            
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Link to="/login" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Typography>Login</Typography>
+              </Link>
+              <Link to="/signup" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Typography>Sign Up</Typography>
+              </Link>
+            </Box>
+          </Toolbar>
+        </Container>
       </AppBar>
 
       <SideDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
