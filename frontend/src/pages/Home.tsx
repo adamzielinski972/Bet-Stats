@@ -1,26 +1,20 @@
 import React from 'react';
-import { Typography, Box, Paper } from '@mui/material';
+import { Typography, Box } from '@mui/material';
+import SportsNavBar from '../components/SportsNavBar';
 
-const Home = () => {
+const Home: React.FC = () => {
   return (
-    <Box sx={{ 
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      p: 2
-    }}>
-      <Paper sx={{ 
-        width: '100%',
-        p: 4, 
-        textAlign: 'center'
-      }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Welcome to Bet Stats
-        </Typography>
-        <Typography variant="body1">
-          Track and analyze your betting statistics with our powerful tools.
-        </Typography>
-      </Paper>
+    <Box>
+      <Box sx={{ width: '30%', maxWidth: '1200px', mx: 'auto' }}>
+        <SportsNavBar />
+      </Box>
+      
+      <Typography variant="h4" gutterBottom align="center">
+        Welcome to Bet Stats
+      </Typography>
+      <Typography variant="body1" align="center">
+        Your one-stop destination for sports betting statistics and analysis.
+      </Typography>
     </Box>
   );
 };
