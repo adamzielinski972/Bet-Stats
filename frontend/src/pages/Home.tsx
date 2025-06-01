@@ -1,30 +1,46 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Typography, Box, Container } from '@mui/material';
 import SportsNavBar from '../components/SportsNavBar';
+import FeaturedBets from '../components/FeaturedBets';
+import FeaturedGames from '../components/FeaturedGames';
 
 const Home: React.FC = () => {
   return (
-    <Box>
-      <Box sx={{ 
-        width: { 
-          xs: '95%', // Mobile: almost full width
-          sm: '80%', // Tablet: 80% width
-          md: '70%', // Desktop: 70% width
-          lg: '60%'  // Large screens: 60% width
-        }, 
-        maxWidth: '1200px', 
-        mx: 'auto' 
-      }}>
-        <SportsNavBar />
-      </Box>
-      
-      <Typography variant="h4" gutterBottom align="center">
-        Welcome to Bet Stats
-      </Typography>
-      <Typography variant="body1" align="center">
-        Your one-stop destination for sports betting statistics and analysis.
-      </Typography>
-    </Box>
+    <Container maxWidth={false} disableGutters>
+      <Container 
+        maxWidth="xl" 
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          px: { xs: 2, sm: 3, md: 4 }
+        }}
+      >
+        <Box sx={{ 
+          width: '100%',
+          maxWidth: '1200px',
+          mb: 4
+        }}>
+          <SportsNavBar />
+        </Box>
+        
+        <Box sx={{ 
+          width: '100%',
+          maxWidth: '1400px',
+          textAlign: 'center'
+        }}>
+          <Typography variant="h4" gutterBottom sx={{ mb: 4 }}>
+            Welcome to Bet Stats
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 6 }}>
+            Your one-stop destination for sports betting statistics and analysis.
+          </Typography>
+          
+          <FeaturedBets />
+          <FeaturedGames />
+        </Box>
+      </Container>
+    </Container>
   );
 };
 
