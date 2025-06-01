@@ -1,6 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline, createTheme } from '@mui/material';
+import { AnimatePresence } from 'framer-motion';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
@@ -11,6 +12,7 @@ import NBA from './pages/leagues/NBA';
 import MLB from './pages/leagues/MLB';
 import NFL from './pages/leagues/NFL';
 import NHL from './pages/leagues/NHL';
+import PageTransition from './components/PageTransition';
 import './App.css';
 
 const theme = createTheme({
@@ -154,23 +156,33 @@ const theme = createTheme({
   }
 });
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+        <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
+        <Route path="/premier-league" element={<PageTransition><PremierLeague /></PageTransition>} />
+        <Route path="/nba" element={<PageTransition><NBA /></PageTransition>} />
+        <Route path="/mlb" element={<PageTransition><MLB /></PageTransition>} />
+        <Route path="/nfl" element={<PageTransition><NFL /></PageTransition>} />
+        <Route path="/nhl" element={<PageTransition><NHL /></PageTransition>} />
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
         <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/premier-league" element={<PremierLeague />} />
-            <Route path="/nba" element={<NBA />} />
-            <Route path="/mlb" element={<MLB />} />
-            <Route path="/nfl" element={<NFL />} />
-            <Route path="/nhl" element={<NHL />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AnimatedRoutes />
         </Layout>
       </Router>
     </ThemeProvider>
