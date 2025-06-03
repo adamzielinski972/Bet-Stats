@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -72,8 +73,22 @@ const getConfidenceColor = (confidence: string) => {
 };
 
 const SportPage: React.FC<SportPageProps> = ({ sport, league, games }) => {
+  const navigate = useNavigate();
   const featuredGames = games.filter(game => game.featured);
   const regularGames = games.filter(game => !game.featured);
+
+  const handleGameClick = (game: Game) => {
+    navigate(`/game/${sport}/${game.id}`, { 
+      state: { 
+        sport,
+        league,
+        homeTeam: game.homeTeam,
+        awayTeam: game.awayTeam,
+        time: game.time,
+        odds: game.odds
+      } 
+    });
+  };
 
   return (
     <Container maxWidth="xl">
@@ -98,8 +113,10 @@ const SportPage: React.FC<SportPageProps> = ({ sport, league, games }) => {
                     xs: '100%',
                     sm: 'calc(50% - 12px)',
                     md: 'calc(33.333% - 16px)'
-                  }
+                  },
+                  cursor: 'pointer'
                 }}
+                onClick={() => handleGameClick(game)}
               >
                 <Card
                   sx={{
@@ -173,8 +190,10 @@ const SportPage: React.FC<SportPageProps> = ({ sport, league, games }) => {
                   xs: '100%',
                   sm: 'calc(50% - 12px)',
                   md: 'calc(33.333% - 16px)'
-                }
+                },
+                cursor: 'pointer'
               }}
+              onClick={() => handleGameClick(game)}
             >
               <Paper
                 sx={{

@@ -23,8 +23,31 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
+interface BaseGame {
+  id: number;
+  league: string;
+  homeTeam: string;
+  awayTeam: string;
+  time: string;
+  venue: string;
+  competition: string;
+}
+
+interface SoccerGame extends BaseGame {
+  round: string;
+  homeForm: string;
+  awayForm: string;
+}
+
+interface TeamRecordGame extends BaseGame {
+  homeRecord: string;
+  awayRecord: string;
+}
+
+type Game = SoccerGame | TeamRecordGame;
+
 // Mock data for featured games
-const featuredGames = {
+const featuredGames: Record<string, Game[]> = {
   soccer: [
     {
       id: 1,
@@ -254,188 +277,129 @@ const FeaturedGames: React.FC = () => {
     }
   };
 
+  const handleGameClick = (sport: string, game: Game) => {
+    navigate(`/game/${sport}/${game.id}`, {
+      state: {
+        sport,
+        league: game.league,
+        homeTeam: game.homeTeam,
+        awayTeam: game.awayTeam,
+        time: game.time,
+        odds: {
+          home: '+100',  // Mock odds since they're not in the original data
+          away: '-110',
+          ...(sport === 'soccer' ? { draw: '+240' } : {})
+        }
+      }
+    });
+  };
+
+  const isSoccerGame = (game: Game): game is SoccerGame => {
+    return 'homeForm' in game && 'awayForm' in game;
+  };
+
+  const isTeamRecordGame = (game: Game): game is TeamRecordGame => {
+    return 'homeRecord' in game && 'awayRecord' in game;
+  };
+
   return (
-    <Box sx={{ width: '100%', mt: 6 }}>
-      <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 600, textAlign: 'center' }}>
+    <Box sx={{ mb: 6 }}>
+      <Typography variant="h5" gutterBottom sx={{ mb: 3, textAlign: 'left' }}>
         Featured Games
       </Typography>
-      <Box 
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 6,
-          maxWidth: '1200px',
-          mx: 'auto',
-          px: { xs: 2, sm: 3, md: 4 }
-        }}
-      >
-        {Object.entries(featuredGames).map(([sport, games]) => (
-          <Box key={sport}>
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between',
-              mb: 3
-            }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 500, 
-                  textTransform: 'capitalize',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  pl: { xs: 0, sm: 0, md: 1 }
-                }}
-              >
-                {getSportIcon(sport)}
-                {sport} Games
-              </Typography>
-              <Button
-                endIcon={<ChevronRight />}
-                onClick={() => navigate(getSportRoute(sport))}
+      {Object.entries(featuredGames).map(([sport, games]) => (
+        <Box key={sport} sx={{ mb: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {getSportIcon(sport)}
+              {sport.charAt(0).toUpperCase() + sport.slice(1)}
+            </Typography>
+            <Button
+              endIcon={<ChevronRight />}
+              onClick={() => navigate(getSportRoute(sport))}
+            >
+              View All
+            </Button>
+          </Box>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            {games.map((game) => (
+              <Card
+                key={game.id}
                 sx={{
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  fontSize: '1rem',
-                  py: 0.75,
-                  px: 1.5,
-                  borderRadius: 1.5,
-                  transition: 'all 0.2s ease-in-out',
-                  '& .MuiButton-endIcon': {
-                    ml: 0.5,
-                    transition: 'transform 0.2s ease-in-out',
-                    '& > svg': {
-                      fontSize: '1.25rem'
-                    }
-                  },
+                  width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(33.333% - 11px)' },
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
                   '&:hover': {
-                    backgroundColor: 'primary.main',
-                    color: 'primary.contrastText',
-                    transform: 'translateX(4px)',
-                    '& .MuiButton-endIcon': {
-                      transform: 'translateX(2px)'
-                    }
+                    transform: 'translateY(-4px)',
+                    boxShadow: (theme) => `0 6px 12px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.2)'}`,
                   }
                 }}
+                onClick={() => handleGameClick(sport, game)}
               >
-                More Games
-              </Button>
-            </Box>
-            <Box 
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 3,
-                justifyContent: 'center'
-              }}
-            >
-              {games.map((game) => (
-                <Box 
-                  key={game.id}
-                  sx={{ 
-                    width: {
-                      xs: '100%',
-                      sm: 'calc(50% - 16px)',
-                      md: 'calc(33.333% - 16px)',
-                      maxWidth: '360px'
-                    },
-                    minWidth: {
-                      xs: '100%',
-                      sm: '300px',
-                      md: '300px'
-                    }
-                  }}
-                >
-                  <Card 
-                    sx={{ 
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: (theme) => `0 6px 12px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.2)'}`,
-                      }
-                    }}
-                  >
-                    <CardHeader
-                      avatar={
-                        <Avatar sx={{ bgcolor: 'primary.main' }}>
-                          {getSportIcon(sport)}
-                        </Avatar>
-                      }
-                      title={game.competition}
-                      subheader={game.league}
-                    />
-                    <CardContent>
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="h6" align="center" gutterBottom>
-                          {game.homeTeam} vs {game.awayTeam}
-                        </Typography>
-                        <Divider sx={{ my: 1.5 }} />
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <Schedule fontSize="small" />
-                          <Typography variant="body2" color="text.secondary">
-                            {getFormattedDateTime(game.time)}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <LocationOn fontSize="small" />
-                          <Typography variant="body2" color="text.secondary">
-                            {game.venue}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        {'homeForm' in game ? (
-                          <>
-                            <Tooltip title="Last 5 games">
-                              <Chip
-                                label={`Form: ${game.homeForm}`}
-                                size="small"
-                                color="primary"
-                                sx={{ fontWeight: 500 }}
-                              />
-                            </Tooltip>
-                            <Tooltip title="Last 5 games">
-                              <Chip
-                                label={`Form: ${game.awayForm}`}
-                                size="small"
-                                color="primary"
-                                sx={{ fontWeight: 500 }}
-                              />
-                            </Tooltip>
-                          </>
-                        ) : (
-                          <>
-                            <Tooltip title="Season Record">
-                              <Chip
-                                label={`Record: ${game.homeRecord}`}
-                                size="small"
-                                color="primary"
-                                sx={{ fontWeight: 500 }}
-                              />
-                            </Tooltip>
-                            <Tooltip title="Season Record">
-                              <Chip
-                                label={`Record: ${game.awayRecord}`}
-                                size="small"
-                                color="primary"
-                                sx={{ fontWeight: 500 }}
-                              />
-                            </Tooltip>
-                          </>
-                        )}
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Box>
-              ))}
-            </Box>
+                <CardHeader
+                  avatar={
+                    <Avatar sx={{ bgcolor: 'primary.main' }}>
+                      {getSportIcon(sport)}
+                    </Avatar>
+                  }
+                  title={`${game.homeTeam} vs ${game.awayTeam}`}
+                  subheader={game.competition}
+                />
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Schedule fontSize="small" />
+                    <Typography variant="body2" color="text.secondary">
+                      {getFormattedDateTime(game.time)}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LocationOn fontSize="small" />
+                    <Typography variant="body2" color="text.secondary">
+                      {game.venue}
+                    </Typography>
+                  </Box>
+                  {isTeamRecordGame(game) && (
+                    <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+                      <Chip
+                        size="small"
+                        label={`Home: ${game.homeRecord}`}
+                        color="primary"
+                        variant="outlined"
+                      />
+                      <Chip
+                        size="small"
+                        label={`Away: ${game.awayRecord}`}
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </Box>
+                  )}
+                  {isSoccerGame(game) && (
+                    <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+                      <Tooltip title="Last 5 games">
+                        <Chip
+                          size="small"
+                          label={`Form: ${game.homeForm}`}
+                          color="primary"
+                          variant="outlined"
+                        />
+                      </Tooltip>
+                      <Tooltip title="Last 5 games">
+                        <Chip
+                          size="small"
+                          label={`Form: ${game.awayForm}`}
+                          color="primary"
+                          variant="outlined"
+                        />
+                      </Tooltip>
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </Box>
-        ))}
-      </Box>
+        </Box>
+      ))}
     </Box>
   );
 };

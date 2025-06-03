@@ -12,6 +12,7 @@ import NBA from './pages/leagues/NBA';
 import MLB from './pages/leagues/MLB';
 import NFL from './pages/leagues/NFL';
 import NHL from './pages/leagues/NHL';
+import GamePage from './pages/GamePage';
 import PageTransition from './components/PageTransition';
 import './App.css';
 
@@ -170,6 +171,7 @@ const AnimatedRoutes = () => {
         <Route path="/mlb" element={<PageTransition><MLB /></PageTransition>} />
         <Route path="/nfl" element={<PageTransition><NFL /></PageTransition>} />
         <Route path="/nhl" element={<PageTransition><NHL /></PageTransition>} />
+        <Route path="/game/:sport/:id" element={<PageTransition><GamePage /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
