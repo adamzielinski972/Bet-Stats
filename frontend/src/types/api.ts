@@ -1,3 +1,21 @@
+export interface Outcome {
+    name: string;
+    price: number;
+}
+
+export interface Market {
+    key: string;
+    lastUpdate: string;
+    outcomes: Outcome[];
+}
+
+export interface Bookmaker {
+    key: string;
+    title: string;
+    lastUpdate: string;
+    markets: Market[];
+}
+
 export interface Game {
     id: string;
     sportKey: string;
@@ -8,21 +26,7 @@ export interface Game {
     bookmakers: Bookmaker[];
 }
 
-export interface Bookmaker {
-    key: string;
-    title: string;
-    lastUpdate: string;
-    markets: Market[];
-}
-
-export interface Market {
-    key: string;
-    lastUpdate: string;
-    outcomes: Outcome[];
-}
-
-export interface Outcome {
-    name: string;
-    price: number;
-    point?: number;
+export interface OddsResponse {
+    games: Game[];
+    lastUpdated: Date;
 } 

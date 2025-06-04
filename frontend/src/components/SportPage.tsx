@@ -10,7 +10,8 @@ import {
   Avatar,
   Divider,
   Container,
-  Paper
+  Paper,
+  CircularProgress
 } from '@mui/material';
 import {
   SportsSoccer,
@@ -22,7 +23,7 @@ import {
 } from '@mui/icons-material';
 
 interface Game {
-  id: number;
+  id: string;
   homeTeam: string;
   awayTeam: string;
   time: string;
@@ -37,9 +38,10 @@ interface Game {
 }
 
 interface SportPageProps {
-  sport: 'soccer' | 'basketball' | 'baseball' | 'football' | 'hockey';
+  sport: string;
   league: string;
   games: Game[];
+  loading?: boolean;
 }
 
 const getSportIcon = (sport: string) => {
@@ -72,23 +74,24 @@ const getConfidenceColor = (confidence: string) => {
   }
 };
 
-const SportPage: React.FC<SportPageProps> = ({ sport, league, games }) => {
+const SportPage: React.FC<SportPageProps> = ({ sport, league, games, loading = false }) => {
   const navigate = useNavigate();
   const featuredGames = games.filter(game => game.featured);
   const regularGames = games.filter(game => !game.featured);
 
   const handleGameClick = (game: Game) => {
-    navigate(`/game/${sport}/${game.id}`, { 
-      state: { 
-        sport,
-        league,
-        homeTeam: game.homeTeam,
-        awayTeam: game.awayTeam,
-        time: game.time,
-        odds: game.odds
-      } 
-    });
+    navigate(`/game/${sport}/${game.id}`);
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="xl">
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="xl">
@@ -186,59 +189,55 @@ const SportPage: React.FC<SportPageProps> = ({ sport, league, games }) => {
             <Box 
               key={game.id} 
               sx={{ 
-                width: {
-                  xs: '100%',
-                  sm: 'calc(50% - 12px)',
-                  md: 'calc(33.333% - 16px)'
-                },
+                width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' },
                 cursor: 'pointer'
               }}
               onClick={() => handleGameClick(game)}
             >
-              <Paper
-                sx={{
+              <Paper 
+                sx={{ 
                   p: 2,
                   transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
                   '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: (theme) => `0 4px 8px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.2)'}`,
+                    transform: 'translateY(-4px)',
+                    boxShadow: (theme) => `0 6px 12px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.2)'}`,
                   }
                 }}
               >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                    {new Date(game.time).toLocaleString()}
-                  </Typography>
-                  <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Avatar sx={{ bgcolor: 'primary.main' }}>
                     {getSportIcon(sport)}
                   </Avatar>
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                      {game.homeTeam} vs {game.awayTeam}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {new Date(game.time).toLocaleString()}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="h6" sx={{ textAlign: 'center', mb: 1 }}>
-                    {game.homeTeam} vs {game.awayTeam}
-                  </Typography>
-                  <Divider />
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-around', gap: 2 }}>
-                  <Chip
-                    label={`Home ${game.odds.home}`}
-                    color="primary"
-                    variant="outlined"
-                    size="small"
+                <Divider sx={{ my: 1 }} />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Chip 
+                    label={`Home ${game.odds.home}`} 
+                    size="small" 
+                    color="primary" 
+                    variant="outlined" 
                   />
-                  {sport === 'soccer' && game.odds.draw && (
-                    <Chip
-                      label={`Draw ${game.odds.draw}`}
-                      color="primary"
-                      variant="outlined"
-                      size="small"
+                  {game.odds.draw && (
+                    <Chip 
+                      label={`Draw ${game.odds.draw}`} 
+                      size="small" 
+                      color="primary" 
+                      variant="outlined" 
                     />
                   )}
-                  <Chip
-                    label={`Away ${game.odds.away}`}
-                    color="primary"
-                    variant="outlined"
-                    size="small"
+                  <Chip 
+                    label={`Away ${game.odds.away}`} 
+                    size="small" 
+                    color="primary" 
+                    variant="outlined" 
                   />
                 </Box>
               </Paper>

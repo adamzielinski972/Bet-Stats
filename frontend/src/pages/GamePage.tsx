@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation, Navigate, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -17,7 +17,9 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Tooltip
+  Tooltip,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import {
   SportsSoccer,
@@ -32,6 +34,7 @@ import {
   Assessment,
   ArrowBack
 } from '@mui/icons-material';
+import { Game, Bookmaker, Market } from '../types/api';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -125,20 +128,45 @@ const mockTeamProps: GameProp[] = [
   { name: 'Race to 30 Points', odds: 'Home (-110) / Away (-110)', type: 'team' },
 ];
 
+const formatOdds = (price: number): string => {
+  return price >= 0 ? `+${price}` : price.toString();
+};
+
 const GamePage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { sport, id } = useParams<{ sport: string; id: string }>();
   const [tabValue, setTabValue] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [game, setGame] = useState<Game | null>(null);
 
-  // Get props from route state
-  const state = location.state as GamePageProps;
-  
-  // If no state is provided, redirect to home
-  if (!state) {
-    return <Navigate to="/" replace />;
-  }
+  useEffect(() => {
+    const fetchGameData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`http://localhost:3621/api/odds/${sport}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch game data');
+        }
+        const games = await response.json();
+        const foundGame = games.find((g: Game) => g.id === id);
+        if (!foundGame) {
+          throw new Error('Game not found');
+        }
+        setGame(foundGame);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const { sport, league, homeTeam, awayTeam, time, odds } = state;
+    if (sport && id) {
+      fetchGameData();
+    }
+  }, [sport, id]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -146,148 +174,123 @@ const GamePage: React.FC = () => {
 
   const getLeaguePath = (sport: string) => {
     switch (sport) {
-      case 'soccer':
-        return '/premier-league';
-      case 'basketball':
-        return '/nba';
-      case 'baseball':
+      case 'baseball_mlb':
         return '/mlb';
-      case 'football':
+      case 'basketball_nba':
+        return '/nba';
+      case 'soccer_epl':
+        return '/premier-league';
+      case 'football_nfl':
         return '/nfl';
-      case 'hockey':
+      case 'hockey_nhl':
         return '/nhl';
       default:
         return '/';
     }
   };
 
+  if (loading) {
+    return (
+      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (!game) {
+    return <Navigate to="/" replace />;
+  }
+
+  const mainBookmaker = game.bookmakers[0]; // Using first bookmaker for main odds
+  const h2hMarket = mainBookmaker?.markets.find(m => m.key === 'h2h');
+  const homeOdds = h2hMarket?.outcomes.find(o => o.name === game.homeTeam)?.price;
+  const awayOdds = h2hMarket?.outcomes.find(o => o.name === game.awayTeam)?.price;
+
   return (
     <Container maxWidth="xl">
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Tooltip title={`Back to ${league}`}>
+          <Tooltip title={`Back to ${game.sportTitle}`}>
             <IconButton
-              onClick={() => navigate(getLeaguePath(sport))}
+              onClick={() => navigate(getLeaguePath(game.sportKey))}
               sx={{ flexShrink: 0 }}
             >
               <ArrowBack />
             </IconButton>
           </Tooltip>
           <Avatar sx={{ bgcolor: 'primary.main' }}>
-            {getSportIcon(sport)}
+            {getSportIcon(sport || '')}
           </Avatar>
           <Typography variant="h5" component="h1">
-            {homeTeam} vs {awayTeam}
+            {game.homeTeam} vs {game.awayTeam}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <Typography variant="subtitle1" color="text.secondary">
-            {league}
+            {game.sportTitle}
           </Typography>
           <Divider orientation="vertical" flexItem />
           <Typography variant="subtitle1" color="text.secondary">
-            {new Date(time).toLocaleString()}
+            {new Date(game.commenceTime).toLocaleString()}
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Chip label={`Home ${odds.home}`} color="primary" variant="outlined" />
-          {odds.draw && (
-            <Chip label={`Draw ${odds.draw}`} color="primary" variant="outlined" />
-          )}
-          <Chip label={`Away ${odds.away}`} color="primary" variant="outlined" />
+        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <Chip 
+            label={`${game.homeTeam} ${homeOdds ? formatOdds(homeOdds) : 'N/A'}`} 
+            color="primary" 
+            variant="outlined" 
+          />
+          <Chip 
+            label={`${game.awayTeam} ${awayOdds ? formatOdds(awayOdds) : 'N/A'}`} 
+            color="primary" 
+            variant="outlined" 
+          />
         </Box>
-      </Paper>
 
-      <Paper sx={{ width: '100%', mb: 3 }}>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          aria-label="game props tabs"
-        >
-          <Tab icon={<Assessment />} label="Game Props" />
-          <Tab icon={<Person />} label="Player Props" />
-          <Tab icon={<Groups />} label="Team Props" />
-          <Tab icon={<Timeline />} label="Live Betting" />
-        </Tabs>
+        {/* Bookmakers Section */}
+        <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
+          All Bookmakers
+        </Typography>
+        <TableContainer component={Paper} sx={{ mb: 3 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Bookmaker</TableCell>
+                <TableCell>{game.homeTeam}</TableCell>
+                <TableCell>{game.awayTeam}</TableCell>
+                <TableCell>Last Updated</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {game.bookmakers.map((bookmaker) => {
+                const market = bookmaker.markets.find(m => m.key === 'h2h');
+                const homeOdds = market?.outcomes.find(o => o.name === game.homeTeam)?.price;
+                const awayOdds = market?.outcomes.find(o => o.name === game.awayTeam)?.price;
 
-        <TabPanel value={tabValue} index={0}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Prop</TableCell>
-                  <TableCell>Odds</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {mockGameProps.map((prop, index) => (
-                  <TableRow key={index} hover>
-                    <TableCell>{prop.name}</TableCell>
-                    <TableCell>{prop.odds}</TableCell>
+                return (
+                  <TableRow key={bookmaker.key}>
+                    <TableCell>{bookmaker.title}</TableCell>
+                    <TableCell>{homeOdds ? formatOdds(homeOdds) : 'N/A'}</TableCell>
+                    <TableCell>{awayOdds ? formatOdds(awayOdds) : 'N/A'}</TableCell>
+                    <TableCell>
+                      {new Date(bookmaker.lastUpdate).toLocaleString()}
+                    </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </TabPanel>
-
-        <TabPanel value={tabValue} index={1}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Player</TableCell>
-                  <TableCell>Stat</TableCell>
-                  <TableCell>Line</TableCell>
-                  <TableCell>Over</TableCell>
-                  <TableCell>Under</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {mockPlayerProps.map((prop, index) => (
-                  <TableRow key={index} hover>
-                    <TableCell>{prop.player}</TableCell>
-                    <TableCell>{prop.stat}</TableCell>
-                    <TableCell>{prop.line}</TableCell>
-                    <TableCell>{prop.overOdds}</TableCell>
-                    <TableCell>{prop.underOdds}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </TabPanel>
-
-        <TabPanel value={tabValue} index={2}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Prop</TableCell>
-                  <TableCell>Odds</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {mockTeamProps.map((prop, index) => (
-                  <TableRow key={index} hover>
-                    <TableCell>{prop.name}</TableCell>
-                    <TableCell>{prop.odds}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </TabPanel>
-
-        <TabPanel value={tabValue} index={3}>
-          <Box sx={{ p: 3, textAlign: 'center' }}>
-            <Typography variant="h6" color="text.secondary">
-              Live betting will be available when the game starts
-            </Typography>
-          </Box>
-        </TabPanel>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Paper>
     </Container>
   );

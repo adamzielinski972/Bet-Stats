@@ -14,7 +14,6 @@ import NFL from './pages/leagues/NFL';
 import NHL from './pages/leagues/NHL';
 import GamePage from './pages/GamePage';
 import PageTransition from './components/PageTransition';
-import { OddsDisplay } from './components/OddsDisplay';
 import './App.css';
 
 const theme = createTheme({
@@ -185,7 +184,6 @@ function App() {
       <CssBaseline />
       <Router>
         <Layout>
-          <OddsDisplay />
           <AnimatedRoutes />
         </Layout>
       </Router>
