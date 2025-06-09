@@ -1,63 +1,77 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import SportPage from '../../components/SportPage';
+import { Game as APIGame } from '../../types/api';
+import { getOdds, getLastUpdate } from '../../services/oddsService';
+import { Typography, Box } from '@mui/material';
 
-// Mock data for NFL games
-const nflGames = [
-  {
-    id: 1,
-    homeTeam: 'Kansas City Chiefs',
-    awayTeam: 'Buffalo Bills',
-    time: '2024-03-31 16:25',
-    odds: {
-      home: '-120',
-      away: '+100'
-    },
-    featured: true,
-    prediction: 'Chiefs -2.5',
-    confidence: 'High' as const
-  },
-  {
-    id: 2,
-    homeTeam: 'San Francisco 49ers',
-    awayTeam: 'Philadelphia Eagles',
-    time: '2024-03-31 20:20',
-    odds: {
-      home: '-130',
-      away: '+110'
-    },
-    featured: true,
-    prediction: 'Over 48.5 Points',
-    confidence: 'Medium' as const
-  },
-  {
-    id: 3,
-    homeTeam: 'Green Bay Packers',
-    awayTeam: 'Detroit Lions',
-    time: '2024-04-01 13:00',
-    odds: {
-      home: '+110',
-      away: '-130'
-    }
-  },
-  {
-    id: 4,
-    homeTeam: 'Dallas Cowboys',
-    awayTeam: 'New York Giants',
-    time: '2024-04-01 16:25',
-    odds: {
-      home: '-140',
-      away: '+120'
-    }
-  }
-];
+interface SportPageGame {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  time: string;
+  odds: {
+    home: string;
+    away: string;
+    draw?: string;
+  };
+  featured?: boolean;
+  prediction?: string;
+  confidence?: 'High' | 'Medium' | 'Low';
+}
 
 const NFL: React.FC = () => {
+  const [games, setGames] = useState<SportPageGame[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        setLoading(true);
+        const gamesData = await getOdds('americanfootball_nfl');
+        const lastUpdateTime = await getLastUpdate('americanfootball_nfl');
+        setLastUpdate(lastUpdateTime);
+
+        const transformedGames: SportPageGame[] = gamesData.map((game: APIGame) => ({
+          id: game.id,
+          homeTeam: game.homeTeam,
+          awayTeam: game.awayTeam,
+          time: game.commenceTime,
+          odds: {
+            home: game.bookmakers?.[0]?.markets?.[0]?.outcomes?.find(o => o.name === game.homeTeam)?.price.toString() || 'N/A',
+            away: game.bookmakers?.[0]?.markets?.[0]?.outcomes?.find(o => o.name === game.awayTeam)?.price.toString() || 'N/A'
+          },
+          featured: Math.random() < 0.3 // Randomly feature some games
+        }));
+
+        setGames(transformedGames);
+      } catch (error) {
+        console.error('Error fetching NFL games:', error);
+        setGames([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
+  }, []);
+
   return (
-    <SportPage
-      sport="football"
-      league="NFL"
-      games={nflGames}
-    />
+    <>
+      {lastUpdate && (
+        <Box sx={{ p: 2, textAlign: 'right' }}>
+          <Typography variant="caption" color="text.secondary">
+            Last updated: {lastUpdate.toLocaleString()}
+          </Typography>
+        </Box>
+      )}
+      <SportPage
+        sport="football"
+        league="NFL"
+        games={games}
+        loading={loading}
+      />
+    </>
   );
 };
 

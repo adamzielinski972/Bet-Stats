@@ -89,8 +89,13 @@ async function updateOdds(sport) {
 // Schedule daily updates at 00:00
 cron.schedule('0 0 * * *', async () => {
   console.log('Running daily odds update...');
-  await updateOdds('baseball_mlb');
-  // Add other sports here as needed
+  // Update all sports
+  await Promise.all([
+    updateOdds('baseball_mlb'),
+    updateOdds('basketball_nba'),
+    updateOdds('icehockey_nhl'),
+    updateOdds('americanfootball_nfl')
+  ]).catch(console.error);
 });
 
 // API Endpoints
@@ -149,6 +154,11 @@ const PORT = process.env.PORT || 3621;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   
-  // Initial update on server start
-  updateOdds('baseball_mlb').catch(console.error);
+  // Initial update on server start for all sports
+  Promise.all([
+    updateOdds('baseball_mlb'),
+    updateOdds('basketball_nba'),
+    updateOdds('icehockey_nhl'),
+    updateOdds('americanfootball_nfl')
+  ]).catch(console.error);
 }); 

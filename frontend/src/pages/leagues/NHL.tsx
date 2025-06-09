@@ -1,63 +1,77 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import SportPage from '../../components/SportPage';
+import { Game as APIGame } from '../../types/api';
+import { getOdds, getLastUpdate } from '../../services/oddsService';
+import { Typography, Box } from '@mui/material';
 
-// Mock data for NHL games
-const nhlGames = [
-  {
-    id: 1,
-    homeTeam: 'Boston Bruins',
-    awayTeam: 'Toronto Maple Leafs',
-    time: '2024-03-31 19:00',
-    odds: {
-      home: '-115',
-      away: '-105'
-    },
-    featured: true,
-    prediction: 'Over 6.5 Goals',
-    confidence: 'High' as const
-  },
-  {
-    id: 2,
-    homeTeam: 'Colorado Avalanche',
-    awayTeam: 'Vegas Golden Knights',
-    time: '2024-03-31 22:00',
-    odds: {
-      home: '-130',
-      away: '+110'
-    },
-    featured: true,
-    prediction: 'Avalanche ML',
-    confidence: 'Medium' as const
-  },
-  {
-    id: 3,
-    homeTeam: 'New York Rangers',
-    awayTeam: 'Pittsburgh Penguins',
-    time: '2024-04-01 19:00',
-    odds: {
-      home: '-125',
-      away: '+105'
-    }
-  },
-  {
-    id: 4,
-    homeTeam: 'Edmonton Oilers',
-    awayTeam: 'Calgary Flames',
-    time: '2024-04-01 21:00',
-    odds: {
-      home: '-120',
-      away: '+100'
-    }
-  }
-];
+interface SportPageGame {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  time: string;
+  odds: {
+    home: string;
+    away: string;
+    draw?: string;
+  };
+  featured?: boolean;
+  prediction?: string;
+  confidence?: 'High' | 'Medium' | 'Low';
+}
 
 const NHL: React.FC = () => {
+  const [games, setGames] = useState<SportPageGame[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        setLoading(true);
+        const gamesData = await getOdds('icehockey_nhl');
+        const lastUpdateTime = await getLastUpdate('icehockey_nhl');
+        setLastUpdate(lastUpdateTime);
+
+        const transformedGames: SportPageGame[] = gamesData.map((game: APIGame) => ({
+          id: game.id,
+          homeTeam: game.homeTeam,
+          awayTeam: game.awayTeam,
+          time: game.commenceTime,
+          odds: {
+            home: game.bookmakers?.[0]?.markets?.[0]?.outcomes?.find(o => o.name === game.homeTeam)?.price.toString() || 'N/A',
+            away: game.bookmakers?.[0]?.markets?.[0]?.outcomes?.find(o => o.name === game.awayTeam)?.price.toString() || 'N/A'
+          },
+          featured: Math.random() < 0.3 // Randomly feature some games
+        }));
+
+        setGames(transformedGames);
+      } catch (error) {
+        console.error('Error fetching NHL games:', error);
+        setGames([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
+  }, []);
+
   return (
-    <SportPage
-      sport="hockey"
-      league="NHL"
-      games={nhlGames}
-    />
+    <>
+      {lastUpdate && (
+        <Box sx={{ p: 2, textAlign: 'right' }}>
+          <Typography variant="caption" color="text.secondary">
+            Last updated: {lastUpdate.toLocaleString()}
+          </Typography>
+        </Box>
+      )}
+      <SportPage
+        sport="hockey"
+        league="NHL"
+        games={games}
+        loading={loading}
+      />
+    </>
   );
 };
 
